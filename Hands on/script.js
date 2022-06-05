@@ -107,7 +107,7 @@ function init() {
   scene.add(ambient);
 
   const light1 = new THREE.DirectionalLight(0xffffff, 2);
-  light1.position.set(100, 100, 100);
+  //light1.position.set(100, 100, 100);
 
   const light2 = new THREE.DirectionalLight(0xffffff, 2);
   light2.position.set(0, 1, 100);
