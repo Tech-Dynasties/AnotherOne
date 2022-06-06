@@ -3,70 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <title>WASD Control - complete</title>
-
-    <script src="./js/jquery.js"></script>
-    <script src="./js/keyboard.js"></script>
-
-    <script>
-      jQuery.fn.centerv = function () {
-          wh = window.innerHeight;
-          h = this.outerHeight();
-          this.css("position", "absolute");
-          this.css("top", Math.max(0, (wh - h) / 2) + "px");
-          return this;
-        }
-
-
-        jQuery.fn.centerh = function () {
-          ww = window.innerWidth;
-          w = this.outerWidth();
-          this.css("position", "absolute");
-          this.css("left", Math.max(0, (ww - w) / 2) + "px");
-          return this;
-        }         
-
-     jQuery.fn.center = function () {
-        this.centerv();
-        this.centerh();
-        return this;
-      } 
-
-      $(document).ready(function() {
-      
-      // Prepare the instructions.
-      $('#instructions').center();
-      $('#instructions').hide();
-      KeyboardJS.bind.key('i', function(){$('#instructions').show()},
-      function(){$('#instructions').hide()});
-    
-      })
-    </script>
-
     <link rel="stylesheet" href="./style.css" />
   </head>
-
-
   <body>
     <!-- partial:index.partial.html -->
-
-    <div id='instructions'>
-      How to play Maze Runner:
-      <br><br>
-      Use the arrow keys to move the ball and find the exit to the maze.
-      <br><br>
-      W : Move Forward
-      S : Move Backward
-      A : Move Left
-      D : Move Right
-    </div>
-    <div id='help'>
-      Hold down the 'I' key for instructions.
-    </div>
-
-    <div id='status'>
-      Game Ign Progress...
-    </div>
-    
     <a id="camera-btn"
       ><div>
         <i class="fas fa-camera"></i></div

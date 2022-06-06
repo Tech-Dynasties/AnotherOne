@@ -17,33 +17,3 @@ body {
   height: 45px;
   border-radius: 50%;
 }
-
-#instructions {
-  background-color: rgba(0, 0, 0, 0.75);
-  color: white;
-  text-align: center;
-  padding: 32px;
-  margin: 0px;
-  display: inline;
-  border: 2px solid white;
-}
-
-#help {
-  position: absolute;
-  left: 0px;
-  bottom: 0px;
-  padding: 4px;
-  color: white;
-}
-
-#status {
-  position: relative;
-  text-align: center;
-  left: 0px;
-  top: 0px;
-  padding: 4px;
-  color: rgba(30, 30, 30, 0.5);
-  font-size: large;
-  font-weight: bold;
-
-}

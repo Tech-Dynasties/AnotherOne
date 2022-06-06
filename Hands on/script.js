@@ -14,7 +14,12 @@ var scene,
   crateTexture,
   crateNormalMap,
   crateBumpMap,
-  crateBox;
+  crateBox,
+  box;
+var run_f = true;
+var run_b = true;
+var turn_l = true;
+var turn_r = true;
 var crates = [];
 var loadingManager = null;
 var RESOURCES_LOADED = false;
@@ -88,7 +93,7 @@ function init() {
 
   clock = new THREE.Clock();
 
-  scene = new THREE.Scene();
+  // scene = new THREE.Scene();
   let col = 0xffffff;
   scene = new THREE.Scene();
   scene.background = new THREE.Color(col);
@@ -107,7 +112,7 @@ function init() {
   scene.add(ambient);
 
   const light1 = new THREE.DirectionalLight(0xffffff, 2);
-  //light1.position.set(100, 100, 100);
+  light1.position.set(100, 100, 100);
 
   const light2 = new THREE.DirectionalLight(0xffffff, 2);
   light2.position.set(0, 1, 100);
@@ -126,6 +131,17 @@ function init() {
   // light.shadow.camera.right = shadowSize;
   // scene.add(light);
   sun = light1;
+
+  var skybox = new THREE.CubeTextureLoader();
+  var texture = skybox.load([
+    "img/cocoa_ft.jpg",
+    "img/cocoa_bk.jpg",
+    "img/cocoa_up.jpg",
+    "img/cocoa_dn.jpg",
+    "img/cocoa_rt.jpg",
+    "img/cocoa_lf.jpg",
+  ]);
+  scene.background = texture;
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.shadowMap.enabled = true;
@@ -172,27 +188,17 @@ function init() {
       })
     );
 
-    scene.add(cratename);
     cratename.position.set(px, py, pz);
     cratename.receiveShadow = true;
     cratename.castShadow = true;
+    scene.add(cratename);
 
-    var crate = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-    crate.setFromObject(cratename);
-    // console.log(crate);
+    cratename.name = "block";
 
-    crates.push(crate);
-  }
+    // var crate = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    // crate.setFromObject(cratename);
 
-  function intersect(a, b) {
-    return (
-      a.min.x <= b.max.x &&
-      a.max.x >= b.min.x &&
-      a.min.y <= b.max.y &&
-      a.max.y >= b.min.y &&
-      a.min.z <= b.max.z &&
-      a.max.z >= b.min.z
-    );
+    crates.push(cratename);
   }
 
   function createCrates() {
@@ -215,12 +221,9 @@ function init() {
   }
 
   createCrates();
-  for (var i = 0; i < crates.length; i++) {
-    console.log(crates[i]);
-    console.log(crates[i].max.x);
-  }
-  // console.log("Hi");
-  // console.log(crates.length);
+  // for (var i = 0; i < crates.length; i++) {
+  //   console.log(crates[i].position);
+  // }
 
   const loader = new THREE.GLTFLoader();
   // loader.setPath(assetPath);
@@ -262,17 +265,7 @@ function init() {
 
     object.scene.children[0].scale.set(0.02, 0.02, 0.02);
     player.add(object.scene.children[0]);
-    player.scale.set(0.3, 1, 1);
-
-    player_box = new THREE.BoundingBoxHelper(player, 0xff0000);
-
-    player_box.update();
-
-    player_box_b = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-    player_box_b.setFromObject(player_box);
-
-    console.log(player_box_b);
-    scene.add(player_box);
+    player.scale.set(0.5, 1, 1);
 
     createCameras();
     addKeyboardControl();
@@ -365,13 +358,6 @@ function keyUp(evt) {
 }
 
 function playerControl(forward, turn) {
-  // console.log(crates.length);
-  // for (var i = 0; i < crates.length; i++) {
-  //   if (crates[i].intersectsBox(player_box)) {
-  //     console.log("HI");
-  //   }
-  // }
-  // console.log(player.position);
   if (forward == 0 && turn == 0) {
     delete player.userData.move;
   } else {
@@ -390,11 +376,103 @@ function playerControl(forward, turn) {
   }
 }
 
-function update() {
-  player_box.update();
-  player_box_b.setFromObject(player_box);
-  // console.log(player_box_b);
+const box1 = new THREE.Mesh(
+  new THREE.BoxGeometry(2, 2, 2),
+  new THREE.MeshPhongMaterial({
+    color: 0x444444,
+  })
+);
 
+box1.position.set(23, 0, 23);
+scene.add(box1);
+
+box = new THREE.Mesh(
+  new THREE.BoxGeometry(0.05, 0.05, 0.05),
+  new THREE.MeshPhongMaterial({
+    color: 0xff0000,
+  })
+);
+
+box.position.set(0, 0, 0);
+scene.add(box);
+box.name = "player";
+
+const box2 = new THREE.Mesh(
+  new THREE.BoxGeometry(5, 5, 5),
+  new THREE.MeshPhongMaterial({
+    color: 0xffff00,
+  })
+);
+
+box2.position.set(21, 0, 0);
+scene.add(box2);
+box2.name = "block";
+var b = [];
+for (let i = 0; i < scene.children.length; i++) {
+  if (scene.children[i].isMesh) {
+    b[i] = scene.children[i];
+    console.log(b[i]);
+  }
+}
+b.shift();
+
+console.log(b);
+console.log(scene.children);
+
+const raycaster = new THREE.Raycaster();
+const search = [];
+const search_b = [];
+const lag = 0.08;
+
+for (let i = 0; i < 360; i += 3) {
+  search[i] = new THREE.Vector3(Math.cos(i), 0, Math.sin(i));
+  // console.log(search[i]);
+}
+function chase() {
+  search.forEach((direction) => {
+    raycaster.set(box1.position, direction, 0, 100);
+    const intersects = raycaster.intersectObjects(scene.children, false);
+
+    if (intersects.length > 0) {
+      if (intersects[0].object.name == "player") {
+        box1.position.x += direction.x * lag;
+        box1.position.z += direction.z * lag;
+      }
+    }
+  });
+}
+
+for (let i = 0; i < 360; i += 3) {
+  search_b[i] = new THREE.Vector3(Math.cos(i), 0, Math.sin(i));
+}
+function checkCollision() {
+  search_b.forEach((direction) => {
+    raycaster.set(box.position, direction, 0, 50);
+    const intersects = raycaster.intersectObjects(b, false);
+    // console.log(intersects[1]);
+    if (intersects.length > 0) {
+      if (intersects[0].object.name == "block") {
+        if (intersects[0].distance < 0.7) {
+          // console.log(player.position);
+          box.position.x -= direction.x * 0.01;
+          // box.position.y += curr_position.y;
+          box.position.z -= direction.z * 0.01;
+
+          player.position.x = box.position.x;
+          player.position.z = box.position.z;
+        }
+      }
+    }
+  });
+}
+
+function update() {
+  // player_box.update();
+  // console.log(player.position);
+  box.position.x = player.position.x;
+  box.position.z = player.position.z;
+  chase();
+  checkCollision();
   requestAnimationFrame(update);
   renderer.render(scene, camera);
 
