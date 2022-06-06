@@ -6,6 +6,8 @@ var scene,
   controls,
   clock,
   player,
+  food,
+  model,
   player_box,
   player_box_b,
   mixer,
@@ -228,6 +230,35 @@ function init() {
   const loader = new THREE.GLTFLoader();
   // loader.setPath(assetPath);
 
+  loader.load(
+    "assets/bought_bread/scene.gltf",
+    function (gltf) {
+      food = gltf.scene;
+      food.scale.set(25, 25, 25);
+      scene.add(food);
+
+      food.position.set(box2.position.x, 2, box2.position.z);
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+
+  loader.load(
+    "assets/Skull.gltf",
+    function (gltf) {
+      model = gltf.scene;
+      model.scale.set(2, 2, 2);
+      scene.add(model);
+      model.position.set(box1.position.x, 0, box1.position.z);
+    },
+    undefined,
+    function (e) {
+      console.error(e);
+    }
+  );
+
   loader.load("assets/fred.glb", (object) => {
     // console.log(object.animations[0]);
     mixer = new THREE.AnimationMixer(object.scene);
@@ -398,15 +429,16 @@ scene.add(box);
 box.name = "player";
 
 const box2 = new THREE.Mesh(
-  new THREE.BoxGeometry(5, 5, 5),
+  new THREE.BoxGeometry(2, 2, 2),
   new THREE.MeshPhongMaterial({
     color: 0xffff00,
   })
 );
 
-box2.position.set(21, 0, 0);
+box2.position.set(0, 0, 8);
 scene.add(box2);
-box2.name = "block";
+box2.name = "food";
+
 var b = [];
 for (let i = 0; i < scene.children.length; i++) {
   if (scene.children[i].isMesh) {
@@ -437,6 +469,22 @@ function chase() {
       if (intersects[0].object.name == "player") {
         box1.position.x += direction.x * lag;
         box1.position.z += direction.z * lag;
+        model.position.set(box1.position.x, 0, box1.position.z);
+      }
+    }
+  });
+}
+function checkFood() {
+  search.forEach((direction) => {
+    raycaster.set(box.position, direction, 0, 50);
+    const intersects = raycaster.intersectObjects(b, false);
+    if (intersects.length > 0) {
+      if (intersects[0].object.name == "food") {
+        if (intersects[0].distance < 3) {
+          box2.position.x = 100;
+          box2.position.z = 100;
+          food.position.set(box2.position.x, 2, box2.position.z);
+        }
       }
     }
   });
@@ -473,6 +521,7 @@ function update() {
   box.position.z = player.position.z;
   chase();
   checkCollision();
+  checkFood();
   requestAnimationFrame(update);
   renderer.render(scene, camera);
 
